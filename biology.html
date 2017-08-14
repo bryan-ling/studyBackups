@@ -1,0 +1,210 @@
+<?php
+// Start the session
+session_start();
+$_SESSION["tablename"] = "grade10science";
+define ('SITE_ROOT','http://localhost');
+
+/*connect to server*/
+	$servername = "localhost";
+	$username = "root";
+	$password = "Shark123";
+	$database="study";
+	$conn = new mysqli($servername, $username, $password, $database);
+	
+	if($conn->connect_error){
+		die($conn->connect_error); 
+	}
+?>
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Biology gr.10</title>
+		<link href="./css/tableStyling.php" type="text/css" rel="stylesheet">
+		<link href="./css/highlight.css" type="text/css" rel="stylesheet">
+		<script src='./js/jquery.js'></script>
+		<script type="text/javascript" src="./js/questionanswerbutton.js"></script>
+		<link href="https://fonts.googleapis.com/css?family=Ubuntu+Condensed" rel="stylesheet">
+	</head>
+<body>
+	
+<div class="background">
+		<button type="button" class="editButton"style="position: relative; width: 100px; margin:auto; display: block;top: -10px;">Edit Info</button>
+		<!-- Highlights button-->
+		<div class="highlight"><div id="highlighted"></div></div>
+		<script type="text/javascript" src="../js/highlight.js"></script>
+		<div class="ShowAnswersButton colorBorder">
+		</div>
+		<div class=" ShowQuestionsButton colorBorder colorTwo"> 
+		</div>
+		<h1 class="colorText">Grade 10 Science</h1><p id="test"></p>
+		<div class="Units doneEditing">
+			<?php
+			/*retrieve data from table*/
+				$insert = "SELECT question, answer FROM ".$_SESSION["tablename"];
+				$result = $conn->query($insert);
+				$number = 1;
+				if ($result->num_rows > 0) {
+					while($row = $result->fetch_assoc()) {
+					
+					if($row["question"] === "!@#title!@#"){
+						echo '<div class="UnitsRow"><div class="UnitSelect colorBorder" id="unit'.$number.'">
+							</div><div class="UnitWords"><p>'. $row["answer"].'<p> </div></div>	';
+							$number = $number + 1;
+					}	
+					}
+				} 
+			?>
+		</div>
+		
+			<?php
+	
+
+			/*prepare statement*/
+			$statement = $conn->prepare("INSERT INTO " .$_SESSION["tablename"]."(question, answer) VALUES (?,?)");
+			$statement->bind_param("ss", $question, $answer);
+		?>
+		
+		<style>
+			.less{
+				background-color: red;
+				color: white;
+				width: 50px;
+
+			}
+			
+	
+		</style>
+		<?php
+		function test_input($data) {
+		$data = trim($data);
+		$data = stripslashes($data);
+		$data = htmlspecialchars($data);
+		return $data;
+		}
+		?>
+		 
+		<div id="form"style="width: 400px; margin: auto;"class="editing">
+		<form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
+		<button type="button"class="add">Add</button>
+		<button type="button"class="addHead">Heading</button>
+		<button type="button"class="addTitle">Title</button><br>
+		<input type="submit" value="SAVE">
+			<?php
+			
+			/*delete info from table*/
+			
+			 if(isset($_POST['content'])){
+				$delete = "DELETE FROM ".$_SESSION["tablename"].";";
+				if ($conn->query($delete) === TRUE) {
+
+				} 
+				else{
+					echo $conn->error;
+				} 
+			 }
+				
+			/*send submited data to table*/
+				
+	
+			$content = "";
+			
+			if ($_SERVER["REQUEST_METHOD"] == "POST") {
+				
+			$content = $_POST["content"]; 
+			$arrlength = count($content);
+				
+			for($x = 0; $x < $arrlength; $x+=2) {
+				$question = $content[$x];
+				$answer = $content[$x + 1];
+				$statement->execute();
+				}
+			}
+			
+			
+		
+				/*retrieve data from table*/
+				$insert = "SELECT question, answer FROM ".$_SESSION["tablename"];
+				$result = $conn->query($insert);
+		?>
+		<table class="colorTwo">
+		<?php
+				if ($result->num_rows > 0) {
+					while($row = $result->fetch_assoc()) {
+						
+					if($row["question"] === "!@#title!@#"){
+						echo '<div class="enter">
+							<input type="button" value="^" class="moveUp">
+							<input type="button" value="v" class="moveDown">
+							<input style="display: none;" name="content[]" type="text" value="!@#title!@#">
+							<textarea name="content[]" rows="2" cols="43">'. $row["answer"].'</textarea>
+							<button class="less">X</button><br></div>';
+					}
+					elseif($row["question"] === "!@#head!@#"){
+						echo '<div class="enter">
+							<input type="button" value="^" class="moveUp">
+							<input type="button" value="v" class="moveDown">
+							<input style="display: none;" name="content[]" type="text" value="!@#head!@#">
+							<textarea name="content[]" rows="1" cols="43">'. $row["answer"].'</textarea>
+							<button class="less">X</button><br></div>';
+					}
+					else{
+						echo '<div class="enter">
+						<input type="button" value="^" class="moveUp">
+						<input type="button" value="v" class="moveDown">
+						<textarea name="content[]" rows="2" cols="20">'. $row["question"].'</textarea>
+						<textarea name="content[]" rows="2" cols="20">'. $row["answer"].'</textarea>
+						<button class="less">X</button><br></div>';	
+					}
+						
+					}
+					
+					
+				} 
+				
+			
+			?>
+		
+		</form>
+		</div>
+		
+		
+		<div class="doneEditing">
+		<table class="colorTwo">
+		<?php
+			/*retrieve data from table*/
+				$insert = "SELECT question, answer FROM ".$_SESSION["tablename"];
+				$result = $conn->query($insert);
+				$tableclass = 1;
+
+				if ($result->num_rows > 0) {
+					while($row = $result->fetch_assoc()) {
+						
+					if($row["question"] === "!@#title!@#"){
+						echo '</table><table class="bigTitle colorTwo unit'.$tableclass.'"><tr>
+						<td class="titles colorText titleColor" colspan="2">'
+						. $row["answer"].'</td></tr>';
+						$tableclass = $tableclass + 1;
+					}
+					elseif($row["question"] === "!@#head!@#"){
+						echo '<tr>
+						<td class="subtitles colorText titleColor" colspan="2">'
+						. $row["answer"].'</td></tr>';
+					}
+					else{
+						echo '<tr>
+						<td class="questions">'. $row["question"].'</td>
+						<td class="answers">'. $row["answer"].'</td>
+						</tr>';	
+					}
+						
+					}
+				} 
+		?>
+		</table>
+
+		</div>
+		
+		</div>
+		<script src="./js/newStudy.js" type="text/javascript"></script>
+	</body>
+</html>
