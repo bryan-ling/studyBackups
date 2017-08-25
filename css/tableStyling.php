@@ -2,8 +2,8 @@
 session_start();
 header("Content-type: text/css");
 $tableName = "allTables";
-$unit = $_SESSION["tableId"] ;
-$colorOne = $colorTwo = $textColor = $image = "green";
+$unit = $_SESSION["color"];
+$colorOne = $colorTwo = $textColor = $image = "red";
 
 /*connect to server*/
 	$servername = "localhost";
@@ -11,21 +11,13 @@ $colorOne = $colorTwo = $textColor = $image = "green";
 	$password = "Shark123";
 	$database="study";
 	$conn = new mysqli($servername, $username, $password, $database);
+	$main=$_SESSION["color"];
+	
 	
 	if($conn->connect_error){
 		die($conn->connect_error); 
 	}
 	
-//find table name
-$insertName = "SELECT id, tableName FROM ".$tableName;
-$resultName = $conn->query($insertName);
-if ($resultName->num_rows > 0) {
-	while($row = $resultName->fetch_assoc()) {
-	if($row["id"] === $_SESSION["tableId"]){
-		$main = $row["tableName"];
-	}
-} 
-}
 /*set colors*/
 $insert = "SELECT tableName, colorOne, colorTwo, textColor,image FROM ".$tableName;
 $result = $conn->query($insert);
@@ -83,7 +75,7 @@ body{
 	background-image: url("<?=$image?>");
 	background-color: black;
 	width: 100%;
-	padding-top: 20px;
+	padding-top: 40px;
 	background-size: cover;
 	background-attachment: fixed;
 	background-position: center center;
@@ -200,14 +192,16 @@ img{
 
 .Units{
 	 margin:auto;
-	 padding-left: 30px;
-	 display: block;
+	 padding-left: 10%;
+	 padding-right: 10%;
 	 position: relative;
-	 max-width: 350px;
 	 margin-bottom: 30px;
+	 display:block;
+	 width: 500px;
 
 
 }
+
 .UnitsRow{ 
   margin-top: 10px;
 }
@@ -226,7 +220,7 @@ img{
 	background-color:<?=$colorTwo?>;
 }
 .UnitWords p{
-  color: white; 
+  color: <?=$textColor?>;
   font-size: 25px;
   padding-top: 5px;
   margin-left: 10px;
@@ -314,7 +308,7 @@ img{
 	height: 100px;
 	position: fixed;
 	width: 100px;
-	top: 215px;
+	top: 323px; /*215*/
 	left: 5px;
 	border-radius: 100%;
 	border: 0;
@@ -329,7 +323,7 @@ img{
 	height: 100px;
 	position: fixed;
 	width: 100px;
-	top: 322px;
+	top: 430px;
 	left: 5px;
 	border-radius: 100%;
 	border: 0;
@@ -396,11 +390,91 @@ button:hover{
 	transition: filter 0.3s ease; 
 }
 .bright:hover{
-	filter: brightness(120%);
+	filter: brightness(150%);
 	transition: filter 0s ease; 
 }
+.editColors{
+	background-color: <?=$colorTwo?>;
+	color: <?=$textColor?>;
+	display: block; 
+	position: fixed; 
+	z-index: 100; 
+	 right: 0;
+    left: 0;
+    margin-right: auto;
+    margin-left: auto;
+    width: 600px;
+	top: 250px;
+	line-height: 40px;
+	font-size: 20px;
+	display: none;
 
+	
+}
+.editColors h1{
+	border: 0;
+	margin-bottom: 15px;
+	text-transform: none;
+	background-color: <?=$colorOne?>;
+	width: 596px;
+	margin: 2px;
+	
+	
+}
+.editColors form{
+	margin-left: 40px;
+	margin-top: 20px;
+}
+.editColors #save{
+	width: 60px; 
+	height: 60px;
+	border-radius: 100%;
+	border: 0;
+	color: <?=$textColor?>;
+	background-color: <?=$colorOne?>;
+	font-size: 20px;
+	cursor: pointer;
+	margin: auto;
+	display: block;
+	margin-top: 10px;
+	text-align: center;
+	margin-bottom: 15px;
+}
+#closeColors{
+	width: 40px; 
+	height: 40px;
+	color: white;
+	background-color: red;
+	border-radius: 100%;
+	font-size: 20px;
+	textalign: center;
+	position: fixed;
+	right: 541px;
+	top: 252px;
+	padding-left: 15px;
+	padding-top: 5px;
+	cursor: pointer;
+	z-index: 101;
+	display: none;
+}
+.editColors #save:focus {outline:0;}
 
+.colorsClose{
+	display: none;
+}
+
+.openColors{
+	width: 100px; 
+	height: 100px;
+	position: fixed;
+	top: 215px;
+	left: 5px;
+	border-radius: 100%;
+	color: <?=$textColor?>;
+	background-color: <?=$colorTwo?>;
+	font-size: 18px;
+	border: 0;
+}
 
 
 

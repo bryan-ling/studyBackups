@@ -66,4 +66,27 @@ $(document).ready(function(){
 		
 	});
 	
+	/*Settings Panel*/
+	$("#closeColors").click (function () {
+		$("#closeColors").fadeOut(200);
+		$(".editColors").fadeOut(200);
+		x = 0;
+	});
+	var x = 0;
+	$(".openColors").click (function () {
+		if (x===0){
+			$("#closeColors").fadeIn(200);
+			$(".editColors").fadeIn(200);
+			x = 1;
+		}
+		else{
+			$("#closeColors").fadeOut(200);
+			$(".editColors").fadeOut(200);
+			x = 0;
+		}
+		
+		
+	});
+	
+	
 });

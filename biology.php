@@ -1,12 +1,39 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 // Start the session
 session_start();
-$_SESSION["tableId"] = "1";
+//get from menu
+
+if(isset($_GET['value'])){
+	$main = $_GET['value'];
+	$_SESSION["color"]=$main;
+}
+else{
+	if(isset($_GET['table'])){
+	$main= $_GET['table'];
+	$_SESSION["color"]=$main;
+	}
+	if(isset($_POST['table'])){
+	$main= $_POST['table'];
+	$_SESSION["color"]=$main;
+	}
+}
+
+/*if(isset($_GET['table'])){
+$main = $_GET['table'];
+}
+if(isset($_POST['table'])){
+$main= $_POST['table'];
+}*/
+
+//$send = $_POST['table']; 
+
 
 define ('SITE_ROOT','http://localhost');
 
 /*connect to server*/
-$main = "";
+
 $tableNames = "allTables";
 $servername = "localhost";
 $username = "root";
@@ -17,16 +44,7 @@ $tableName = $colorOne = $colorTwo = $textColor = $image = "";
 if($conn->connect_error){
 die($conn->connect_error); 
 }
-//find table name
-$insertName = "SELECT id, tableName FROM ".$tableNames;
-$resultName = $conn->query($insertName);
-if ($resultName->num_rows > 0) {
-	while($row = $resultName->fetch_assoc()) {
-	if($row["id"] === $_SESSION["tableId"]){
-		$main = $row["tableName"];
-	}
-} 
-}
+
 //edit colors
 function test_input($data) {
 	  $data = trim($data);
@@ -34,7 +52,7 @@ function test_input($data) {
 	  $data = htmlspecialchars($data);
 	  return $data;
 	}
-$insertColor = "SELECT tableName, colorOne, colorTwo, textColor,image FROM ".$tableNames;
+$insertColor = "SELECT tableName, colorOne, colorTwo, textColor,image,editName FROM ".$tableNames;
 $resultColor = $conn->query($insertColor);
 
 
@@ -46,7 +64,7 @@ if(isset($_GET['colorOne'])){
 	  $textColor = test_input($_GET["textColor"]);
 	  $image  = test_input($_GET["image"]);
 	}
-	$sqlColor = "UPDATE ".$tableNames." SET tableName='".$tableName ."', 
+	$sqlColor = "UPDATE ".$tableNames." SET editName='".$tableName ."', 
 	colorOne='".$colorOne ."', 
 	colorTwo='".$colorTwo ."', 
 	textColor='".$textColor ."', 
@@ -57,14 +75,20 @@ if(isset($_GET['colorOne'])){
 	} else {
 	echo "Error updating record: " . $conn->error;
 	}
-
-	
+	if ($resultColor->num_rows > 0) {
+	while($row = $resultColor->fetch_assoc()) {
+	if($row["tableName"] === $main){
+		$identify = $row["tableName"];
+	}
+	}
+	}
 }
 else{
 	if ($resultColor->num_rows > 0) {
 	while($row = $resultColor->fetch_assoc()) {
 	if($row["tableName"] === $main){
-		$tableName = $row["tableName"];
+		$identify = $row["tableName"];
+		$tableName = $row["editName"];
 		$colorOne = $row["colorOne"];
 		$colorTwo = $row["colorTwo"];
 		$textColor = $row["textColor"];
@@ -73,28 +97,34 @@ else{
 } 
 }
 }
+
+
+
 /*prepare statement*/
-$statement = $conn->prepare("INSERT INTO " .$main."(question, answer) VALUES (?,?)");
+
+$statement = $conn->prepare("INSERT INTO ".$main. "(question, answer) VALUES (?,?)");
 $statement->bind_param("ss", $question, $answer);
+
+
 /*delete info from table*/
 
 if(isset($_POST['content'])){
 $delete = "DELETE FROM ".$main.";";
 if ($conn->query($delete) === TRUE) {
-
+	echo $conn->error;
 } 
 else{
 	echo $conn->error;
 } 
 }
 
+
 /*send submited data to table*/
 
-
+if(isset($_POST['content'])){
 $content = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-
 $content = $_POST["content"]; 
 $arrlength = count($content);
 
@@ -104,6 +134,9 @@ $answer = $content[$x + 1];
 $statement->execute();
 }
 }
+}
+
+
 
 ?>
 <!DOCTYPE html>
@@ -116,20 +149,24 @@ $statement->execute();
 		<script type="text/javascript" src="./js/questionanswerbutton.js"></script>
 		<link href="https://fonts.googleapis.com/css?family=Ubuntu+Condensed" rel="stylesheet">
 	</head>
-<body>
-	
+<body>	
 <div class="background">
 		<!-- edit colors -->
-		<div style="background-color: white; display: block; position: fixed; z-index: 100; width: 100%;top: 300px;">
-		<form method="get" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
+		
+		<div class="editColors">
+		<h1>Table Settings</h1>
+		<form method="get" id="form1" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
+		<input type="hidden" name="table" value="<?php echo $identify;?>" />
 		Table Name: <input type="text" name="tableName" value="<?php echo $tableName;?>"><br>
 		Color One: <input type="color" name="colorOne" value="<?php echo $colorOne;?>"><br>
 		Color Two: <input type="color" name="colorTwo" value="<?php echo $colorTwo;?>"><br>
 		Text Color: <input type="color" name="textColor" value="<?php echo $textColor;?>"><br>
 		Background Image URL: <input type="text" name="image" value="<?php echo $image;?>"><br>
-		<input type="submit" value="Update">
+		<input type="submit" value="Save" id="save" class="bright" >
 		</form>
 		</div>
+		<div id="closeColors">x</div>
+		<button type="button" class="openColors bright">Table<br>Settings</button>
 		<button type="button" class="editButton bright">Edit Info</button>
 		<!-- Highlights button-->
 		<div class="highlight"><div id="highlighted"></div></div>
@@ -159,7 +196,7 @@ $statement->execute();
 		</div>
 
 		<div style="width: 610px; margin: auto; "class="editing">
-		<form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
+		<form id="form2" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
 		
 		
 		
@@ -215,6 +252,7 @@ $result = $conn->query($insert);
 		<button type="button"class="add bright">+</button>
 		<button type="button"class="addTitle bright">Add<br>Title</button><br>
 		</div>
+		<input type="hidden" name="table" value="<?php echo $identify;?>" />
 		<input class="editSaveButton bright"type="submit" value="SAVE">
 		</form>
 		
